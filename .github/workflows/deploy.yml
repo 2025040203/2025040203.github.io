@@ -1,0 +1,39 @@
+name: Deploy Hugo Blog to Pages
+
+on:
+  push:
+    branches: [ main ] # 监听main分支提交
+
+# 权限配置，必须加，否则部署失败
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1.拉取仓库代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true # 拉取主题文件
+
+      # 2.安装Hugo扩展版
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.88.1' # 和你本地版本一致
+          extended: true
+
+      # 3.构建静态网页
+      - name: Build static site
+        run: hugo --minify
+
+      # 4.部署到GitHub Pages
+      - name: Deploy Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
